@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <entry key="default.disk">D:/uploadFile</entry>
+    <!--所有上传文件的临时目录，上传成功后，可以通过common-io.FileUtils.move 方法，移到目标目录。 该临时目录应该和目标目录在一个磁盘驱动器上，移动文件时才能有最好的性能。-->
+    <entry key="upload.temp">/school/upload_temp</entry>
+
+
+</properties>
+
