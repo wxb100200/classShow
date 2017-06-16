@@ -22,7 +22,6 @@ public class Course {
      * 周情况
      * 那些周有课
      */
-    @Column(length = 50)
     private String weeks;
     /**
      * 星期几

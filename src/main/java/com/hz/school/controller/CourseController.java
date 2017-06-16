@@ -38,10 +38,7 @@ public class CourseController {
         try{
             log.info("----->>>>>>>>start import excel data<<<<<<<<<<-----------------");
             FileItem fileItem=parseFormFileItem(request).get(0);
-            File reportXlsFile = File.createTempFile("courseFile", ".xlsx");
-            reportXlsFile.deleteOnExit();
-            fileItem.write(reportXlsFile);
-            Workbook workbook=ExcelUtil.getWorkbook(reportXlsFile);
+            Workbook workbook= ExcelUtil.openExcel(fileItem.getInputStream(),false);
             Sheet sheet=workbook.getSheetAt(0);
             GSCourseDao.parseSheet(sheet,2,0,43);
             System.out.println("end import excel data");

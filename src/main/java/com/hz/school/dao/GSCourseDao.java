@@ -12,6 +12,8 @@ import org.apache.poi.ss.usermodel.Sheet;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 工商课表dao
@@ -65,6 +67,7 @@ public class GSCourseDao {
             Ebean.save(courseList);
             Ebean.commitTransaction();
         }catch (Exception e){
+            log.error("----->>>>>>>>保存一行记录错误",e);
             Ebean.rollbackTransaction();
         }finally {
             Ebean.endTransaction();
@@ -81,13 +84,10 @@ public class GSCourseDao {
         }
     }
 
-    public static void main(String[] args){
-        generateCourseList("素描基础入门（2-1）◇3节/周2-16(9,10节)◇其他课程◇司舵[30人]","wang",1);
-    }
     private static List<Course> generateCourseList(String str,String rname,int i){
         List<Course> courseList=new ArrayList<Course>();
         String weeks=generateWeeks(str);
-        log.info("--->>>weeks:"+weeks);
+        log.info("--->>>rname:"+rname+",weeks:"+weeks);
         String[] classs=generateClassz(i);
         int week=getWeek(i);
         for(String classz:classs){
@@ -105,35 +105,50 @@ public class GSCourseDao {
 
     }
     private static String generateWeeks(String strDemo){
-        StringBuilder result= new StringBuilder();
+//        StringBuilder result= new StringBuilder();
+        String result=",";
         String[] demos=strDemo.split("人]");
         if(demos.length==0) return null;
         for(String demo:demos){
             if(StringUtil.isEmpty(demo)) continue;
-            String[] strs=demo.split("◇");
-            if(strs.length>=1 && !StringUtil.isEmpty(strs[1])){
-                String str=strs[1];
-                log.info("--->>>>>>====str:"+str);
-                result.append(generateWeeksStr(str));
+
+            String regEx="◇[^◇]*◇";
+            Pattern pattern = Pattern.compile(regEx);
+            Matcher m=pattern.matcher(demo);
+            while (m.find()){
+                String ss=m.group();
+                result+=generateSS(ss);
+//                result.append(generateSS(ss));
             }
+        }
+        return result;
+    }
+    private static String generateSS(String str){
+        StringBuilder result= new StringBuilder();
+        String regEx="\\d+-\\d+";
+        Pattern pattern = Pattern.compile(regEx);
+        Matcher m=pattern.matcher(str);
+        while (m.find()){
+            String numStr=generateNumStr(str,m.group());
+            result.append(numStr);
         }
         return result.toString();
     }
-    private static String generateWeeksStr(String str){
+    private static String generateNumStr(String str,String numStr){
         StringBuilder result= new StringBuilder();
-        if(!str.contains("-"))return result.toString();
-        String[] ss=str.split("-");
-        String oneStr=ss[0].replaceAll(".*[^\\d](?=(\\d+))","");
-        int oneNum=Integer.parseInt(oneStr);
-        String twoStr=ss[1].split("[\\D+]")[0];
-        int twoNum=Integer.parseInt(twoStr);
+        String[] numArray=numStr.split("-");
+        int oneNum=Integer.parseInt(numArray[0]);
+        int twoNum=Integer.parseInt(numArray[1]);
+        /*for(;oneNum<=twoNum;oneNum++){
+            result.append(oneNum).append(",");
+        }*/
         if(str.contains("单") || str.contains("双")){
             for(;oneNum<=twoNum;oneNum=oneNum+2){
-                result.append(",").append(oneNum);
+                result.append(oneNum).append(",");
             }
         }else{
             for(;oneNum<=twoNum;oneNum++){
-                result.append(",").append(oneNum);
+                result.append(oneNum).append(",");
             }
         }
         return result.toString();

@@ -31,7 +31,6 @@ import java.util.List;
 @RequestMapping(value="/api",produces="text/html;charset=UTF-8")
 public class ApiResource {
     private static Logger log=Logger.getLogger(ApiResource.class);
-    private static JsonContext jsonContext = Ebean.createJsonContext();
 
     /**
      * 一、获取AccessTlisten令牌接口（延后）
