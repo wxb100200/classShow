@@ -105,30 +105,39 @@ public class GSCourseDao {
 
     }
     private static String generateWeeks(String strDemo){
-//        StringBuilder result= new StringBuilder();
-        String result=",";
+        log.info("------->>>>>>>generateWeeks<<<<<<---------");
+        log.info("---->>>strDemo:"+strDemo);
+        StringBuilder result= new StringBuilder(",");
         String[] demos=strDemo.split("人]");
         if(demos.length==0) return null;
         for(String demo:demos){
+            log.info("------->>>>>>>generateWeeks1111<<<<<<---------demo:"+demo);
             if(StringUtil.isEmpty(demo)) continue;
-
+            log.info("------->>>>>>>generateWeeks222222<<<<<<---------");
             String regEx="◇[^◇]*◇";
+            log.info("------->>>>>>>generateWeeks333333<<<<<<---------");
             Pattern pattern = Pattern.compile(regEx);
+            log.info("------->>>>>>>generateWeeks444444<<<<<<---------");
             Matcher m=pattern.matcher(demo);
+            log.info("------->>>>>>>generateWeeks55555<<<<<<---------");
             while (m.find()){
+                log.info("------->>>>>>>generateWeeks66666<<<<<<---------");
                 String ss=m.group();
-                result+=generateSS(ss);
-//                result.append(generateSS(ss));
+                log.info("------------>>>>>generateWeeks ss:"+ss);
+                result.append(generateSS(ss));
             }
+            log.info("------->>>>>>>generateWeeks777777<<<<<<---------");
         }
-        return result;
+        return result.toString();
     }
     private static String generateSS(String str){
+        log.info("------->>>>>>>generateSS<<<<<<---------");
         StringBuilder result= new StringBuilder();
         String regEx="\\d+-\\d+";
         Pattern pattern = Pattern.compile(regEx);
         Matcher m=pattern.matcher(str);
         while (m.find()){
+            log.info("------->>>>>>>generateSS s:"+m.group());
             String numStr=generateNumStr(str,m.group());
             result.append(numStr);
         }
