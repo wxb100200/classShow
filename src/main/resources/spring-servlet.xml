@@ -27,11 +27,7 @@
              http://www.springframework.org/schema/util 
   
              http://www.springframework.org/schema/util/spring-util-4.1.xsd"> 
-  
-  
-  
-    
-  
+
    <context:annotation-config/> 
   
    <context:component-scan base-package="com.hz.school.controller" />
@@ -48,9 +44,7 @@
   
   
   
-   <bean
-  
-     class="org.springframework.web.servlet.view.InternalResourceViewResolver"> 
+   <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
   
      <property name="prefix" value="/WEB-INF/views/" /> 
   
