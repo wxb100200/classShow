@@ -1,14 +1,12 @@
 package com.hz.school.util;
 
+import org.apache.commons.fileupload.FileItem;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Iterator;
@@ -21,7 +19,19 @@ import java.util.List;
 public class ExcelUtil {
     private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");// 字符
     private static DecimalFormat df = new DecimalFormat("0");// 格式化 number String  
-    private static DecimalFormat nf = new DecimalFormat("0.00");// 格式化数字  
+    private static DecimalFormat nf = new DecimalFormat("0.00");// 格式化数字
+
+    public static Workbook generateWorkbook(FileItem fileItem) throws IOException {
+        String fileName=fileItem.getName();
+        String prefix=fileName.substring(fileName.lastIndexOf(".")+1);
+        Workbook wb;
+        if(prefix.equals("xlsx")){
+            wb = new XSSFWorkbook(fileItem.getInputStream());
+        }else{
+            wb = new HSSFWorkbook(fileItem.getInputStream());
+        }
+        return wb;
+    }
 
     /**
      *

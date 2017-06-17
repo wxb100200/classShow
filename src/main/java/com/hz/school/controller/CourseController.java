@@ -38,7 +38,7 @@ public class CourseController {
         try{
             log.info("----->>>>>>>>start import excel data<<<<<<<<<<-----------------");
             FileItem fileItem=parseFormFileItem(request).get(0);
-            Workbook workbook= ExcelUtil.openExcel(fileItem.getInputStream(),false);
+            Workbook workbook= ExcelUtil.generateWorkbook(fileItem);
             Sheet sheet=workbook.getSheetAt(0);
             GSCourseDao.parseSheet(sheet,2,0,43);
             System.out.println("end import excel data");
@@ -58,7 +58,7 @@ public class CourseController {
         try{
             log.info("----->>>>>>>>uploadGoClassExcel method start import excel data<<<<<<<<<<-----------------");
             FileItem fileItem=parseFormFileItem(request).get(0);
-            Workbook workbook= ExcelUtil.openExcel(fileItem.getInputStream(),true);
+            Workbook workbook= ExcelUtil.generateWorkbook(fileItem);
             Sheet sheet=workbook.getSheetAt(0);
             GoClassCourseDao.parseSheet(sheet,3,0,43);
             System.out.println("end import excel data");
@@ -78,7 +78,7 @@ public class CourseController {
         try{
             log.info("----->>>>>>>>uploadStudentCourseExcel method start import excel data<<<<<<<<<<-----------------");
             FileItem fileItem=parseFormFileItem(request).get(0);
-            Workbook workbook=ExcelUtil.openExcel(fileItem.getInputStream(),false);
+            Workbook workbook= ExcelUtil.openExcel(fileItem.getInputStream(),true);
             Sheet sheet=workbook.getSheetAt(0);
             StudentCourseDao.parseSheet(sheet,0,0,5);
             System.out.println("end import excel data");

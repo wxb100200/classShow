@@ -105,7 +105,6 @@ public class GSCourseDao {
 
     }
     private static String generateWeeks(String strDemo){
-        log.info("------->>>>>>>generateWeeks<<<<<<---------");
         log.info("---->>>strDemo:"+strDemo);
         StringBuilder result= new StringBuilder(",");
         String[] demos=strDemo.split("人]");
@@ -113,20 +112,14 @@ public class GSCourseDao {
         for(String demo:demos){
             log.info("------->>>>>>>generateWeeks1111<<<<<<---------demo:"+demo);
             if(StringUtil.isEmpty(demo)) continue;
-            log.info("------->>>>>>>generateWeeks222222<<<<<<---------");
             String regEx="◇[^◇]*◇";
-            log.info("------->>>>>>>generateWeeks333333<<<<<<---------");
             Pattern pattern = Pattern.compile(regEx);
-            log.info("------->>>>>>>generateWeeks444444<<<<<<---------");
             Matcher m=pattern.matcher(demo);
-            log.info("------->>>>>>>generateWeeks55555<<<<<<---------");
             while (m.find()){
-                log.info("------->>>>>>>generateWeeks66666<<<<<<---------");
                 String ss=m.group();
                 log.info("------------>>>>>generateWeeks ss:"+ss);
                 result.append(generateSS(ss));
             }
-            log.info("------->>>>>>>generateWeeks777777<<<<<<---------");
         }
         return result.toString();
     }
