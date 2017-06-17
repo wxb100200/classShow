@@ -3,14 +3,20 @@ package com.hz.school.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.hz.school.api.base_getToken.ApiAccessToken;
 import com.hz.school.api.base_getToken.ApiAccessTokenService;
+import com.hz.school.api.classbrand_changeInfoCmd.ApiChangeInfo;
+import com.hz.school.api.classbrand_changeInfoCmd.ApiChangeInfoService;
+import com.hz.school.api.classbrand_getBzrClassid.ApiClassRoom;
+import com.hz.school.api.classbrand_getBzrClassid.ApiGetBzrClassService;
+import com.hz.school.api.classbrand_getClassAttendanceInfo.ApiClassAttendance;
+import com.hz.school.api.classbrand_getClassAttendanceInfo.ApiClassAttendanceService;
+import com.hz.school.api.classbrand_getClassStuAttendanceList.ApiStuAttendanceService;
+import com.hz.school.api.classbrand_getClassStuAttendanceList.ApiStudentAttendance;
+import com.hz.school.api.classbrand_getClassStuList.ApiGetClassStuService;
+import com.hz.school.api.classbrand_getClassStuList.ApiStudent;
 import com.hz.school.api.classbrand_getWeather.ApiWeather;
 import com.hz.school.api.classbrand_getWeather.ApiWeatherService;
-import com.hz.school.model.AccessToken;
-import com.hz.school.model.ClassRoom;
-import com.hz.school.util.ApiResult;
-import com.hz.school.util.EbeanUtil;
-import com.hz.school.util.Logger;
-import com.hz.school.util.StringUtil;
+import com.hz.school.model.*;
+import com.hz.school.util.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -20,10 +26,11 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.List;
 
 
 @Controller
-@RequestMapping(value="/api2")
+@RequestMapping(value="/api2",produces="text/html;charset=UTF-8")
 public class ApiController {
 	private static Logger log=Logger.getLogger(ApiResource.class);
 	/*@ResponseBody
@@ -132,19 +139,112 @@ public class ApiController {
 		String card=jParams.getString("card");//班主任卡号
 		String SN=jParams.getString("SN");//CB电子班牌唯一设备号
 		log.info("----->>>>>>BzrClassid accessTlisten:"+accessTlisten+",card:"+card+",SN:"+SN);
-		if(StringUtil.isEmpty(card)){
-			log.error("卡号不能为空");
-			return "{\"api\":\"classbrand_getBzrClassid\",\"data\":\"\",\"ret\":{\"code\":\"400 \",\"msg\":\"卡号不能为空\"},\"v\":\"\"}";
-
-		}
-		ClassRoom classRoom=EbeanUtil.find(ClassRoom.class).where()
-				.select("campusid,classInfo,className,classRoomName,classRoomid,classid,headmasterId,headmasterName")
-				.fetch("classTimeList","classNum,emdTime,startTime")
-				.fetch("committee","committeeCode,committeeName,stuName,stuid")
-				.fetch("xqbm","id,campusid,campusid_ch,currentxq,orgcode,remark,weekbegin,weeknum,xnbm,xqbm,xqgb,xqmc")
-				.setMaxRows(1).findUnique();
+		ClassRoom classRoom=EbeanUtil.find(ClassRoom.class).where().setMaxRows(1).findUnique();
+		ApiClassRoom apiClassRoom= ApiGetBzrClassService.generateData(classRoom);
 		System.out.println("{\"api\":\"classbrand_getBzrClassid\",\"data\":{\"class\":"+ApiResult.objectToJson(classRoom)+",\"classSelection\":null},\"ret\":{\"code\":\"200\",\"msg\":\"\"},\"v\":\"\"}".trim());
-		return "{\"api\":\"classbrand_getBzrClassid\",\"data\":{\"class\":"+ApiResult.objectToJson(classRoom)+",\"classSelection\":null},\"ret\":{\"code\":\"200\",\"msg\":\"\"},\"v\":\"\"}".trim();
+		return "{\"api\":\"classbrand_getBzrClassid\",\"data\":{\"class\":"+ApiResult.objectToJson(apiClassRoom)+",\"classSelection\":null},\"ret\":{\"code\":\"200\",\"msg\":\"\"},\"v\":\"\"}".trim();
+	}
+	/**
+	 * 问题：这个接口该如何触发
+	 *五、 数据变动通知接口
+	 */
+	@ResponseBody
+	@RequestMapping(value="/classbrand_changeInfoCmd",method= RequestMethod.POST)
+	public String ChangeInfoCmd(HttpServletRequest request) {
+		String apiparams=request.getParameter("apiparams");
+		log.info("apiparams="+apiparams);
+		JSONObject jApiparams= JSONObject.parseObject(apiparams);
+		String params=jApiparams.getString("params");
+		JSONObject jParams=JSONObject.parseObject(params);
+		String accessTlisten=jParams.getString("accessTlisten");
+		String classid=jParams.getString("classid");
+		log.info("----->>>>>>ChangeInfoCmd accessTlisten:"+accessTlisten+",classid:"+classid);
+		if(StringUtil.isEmpty(classid)){
+			return ApiResult.error("classbrand_changeInfoCmd","400" ,"卡号不存在").toJson();
+		}
+		List<ChangeInfo> changeInfoList=EbeanUtil.find(ChangeInfo.class).where().eq("classid",classid).findList();
+		List<ApiChangeInfo> apiList= ApiChangeInfoService.generateList(changeInfoList);
+		return ApiResult.list("classbrand_changeInfoCmd",apiList).toJson();
+	}
+	/**
+	 * 通过
+	 *六、 班级学生列表数据接口
+	 */
+	@ResponseBody
+	@RequestMapping(value="/classbrand_getClassStuList",method= RequestMethod.POST)
+	public String ClassStuList(HttpServletRequest request) {
+		String apiparams=request.getParameter("apiparams");
+		log.info("apiparams="+apiparams);
+		JSONObject jApiparams= JSONObject.parseObject(apiparams);
+		String params=jApiparams.getString("params");
+		JSONObject jParams=JSONObject.parseObject(params);
+		String accessTlisten=jParams.getString("accessTlisten");
+		String classId=jParams.getString("classid");
+		log.info("----->>>>>>ClassStuList accessTlisten:"+accessTlisten+",classid:"+classId);
+		if(StringUtil.isEmpty(classId)){
+			return ApiResult.error("classbrand_getClassStuList","400" ,"数据请求错误").toJson();
+		}
+		List<Student> studentList=EbeanUtil.find(Student.class).where().eq("classRoom.classid",classId).findList();
+		List<ApiStudent> apiStudentList= ApiGetClassStuService.generateList(studentList);
+		return ApiResult.list("classbrand_getClassStuList",apiStudentList).toJson();
+	}
+	/**
+	 * 通过
+	 * 生产环境没法返回数据
+	 *七、 班级学生考勤列表数据接口
+	 */
+	@ResponseBody
+	@RequestMapping(value="/classbrand_getClassStuAttendanceList",method= RequestMethod.POST)
+	public String ClassStuAttendanceList(HttpServletRequest request) {
+		String apiparams=request.getParameter("apiparams");
+		log.info("apiparams="+apiparams);
+		JSONObject jApiparams= JSONObject.parseObject(apiparams);
+		String params=jApiparams.getString("params");
+		JSONObject jParams=JSONObject.parseObject(params);
+		String accessTlisten=jParams.getString("accessTlisten");
+		String classId=jParams.getString("classid");
+		String starttime=jParams.getString("starttime");
+		String endtime=jParams.getString("endtime");
+		log.info("----->>>>>>ClassStuAttendanceList accessTlisten:"+accessTlisten+",classid:"+classId+",startTime:"+starttime+",endTime:"+endtime);
+		Long longStartTime= DateUtil.parseDate(starttime,"yyyy-MM-dd").getTime();
+		Long longEndTime= DateUtil.parseDate(endtime,"yyyy-MM-dd").getTime();
+		if(StringUtil.isEmpty(classId) && StringUtil.isEmpty(starttime) && StringUtil.isEmpty(endtime)){
+			return ApiResult.error("classbrand_getClassStuAttendanceList","400" ,"数据请求错误").toJson();
+		}
+		List<StudentAttendance> studentAttendanceList=EbeanUtil.find(StudentAttendance.class).where()
+				.eq("classRoom.classid",classId).ge("attList.longAttTime",longStartTime).lt("attList.longAttTime",longEndTime).findList();
+		List<ApiStudentAttendance> apiList= ApiStuAttendanceService.generateList(studentAttendanceList);
+		return ApiResult.list("classbrand_getClassStuAttendanceList",apiList).toJson();
+	}
+	/**
+	 *八、 班级学生考勤信息数据接口
+	 */
+	/**
+	 * 可以插入数据
+	 * 请求生产服务报错
+	 *这个地方如何根据时间段进行筛选
+	 *九、 班级考勤统计及考勤设置
+	 */
+	@ResponseBody
+	@RequestMapping(value="/classbrand_getClassAttendanceInfo",method= RequestMethod.POST)
+	public String ClassAttendanceInfo(HttpServletRequest request) {
+		String apiparams=request.getParameter("apiparams");
+		log.info("apiparams="+apiparams);
+		JSONObject jApiparams= JSONObject.parseObject(apiparams);
+		String params=jApiparams.getString("params");
+		JSONObject jParams=JSONObject.parseObject(params);
+		String accessTlisten=jParams.getString("accessTlisten");
+		String classId=jParams.getString("classid");
+		String starttime=jParams.getString("starttime");
+		String endtime=jParams.getString("endtime");
+		log.info("----->>>>>>ClassAttendanceInfo accessTlisten:"+accessTlisten+",classid:"+classId+",startTime:"+starttime+",endTime:"+endtime);
+		if(StringUtil.isEmpty(classId)){
+			return ApiResult.error("classbrand_getClassAttendanceInfo","400" ,"数据请求错误").toJson();
+		}
+		ClassAttendance classAttendance=EbeanUtil.find(ClassAttendance.class).where()
+				.eq("classRoom.classid",classId).setMaxRows(1).findUnique();
+		ApiClassAttendance apiData= ApiClassAttendanceService.generateData(classAttendance);
 
+		return ApiResult.single("classbrand_getClassAttendanceInfo",apiData).toSingleJson();
 	}
 }
