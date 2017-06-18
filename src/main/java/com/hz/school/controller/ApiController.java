@@ -5,14 +5,26 @@ import com.hz.school.api.base_getToken.ApiAccessToken;
 import com.hz.school.api.base_getToken.ApiAccessTokenService;
 import com.hz.school.api.classbrand_changeInfoCmd.ApiChangeInfo;
 import com.hz.school.api.classbrand_changeInfoCmd.ApiChangeInfoService;
+import com.hz.school.api.classbrand_classCircleParise.ApiClassCircleParise;
+import com.hz.school.api.classbrand_classCircleParise.ApiClassCirclePariseService;
 import com.hz.school.api.classbrand_getBzrClassid.ApiClassRoom;
 import com.hz.school.api.classbrand_getBzrClassid.ApiGetBzrClassService;
 import com.hz.school.api.classbrand_getClassAttendanceInfo.ApiClassAttendance;
 import com.hz.school.api.classbrand_getClassAttendanceInfo.ApiClassAttendanceService;
+import com.hz.school.api.classbrand_getClassExamInfoList.ApiClassExamInfoService;
+import com.hz.school.api.classbrand_getClassExamInfoList.ApiExamInfo;
+import com.hz.school.api.classbrand_getClassParentMsgList.ApiClassParentMsg;
+import com.hz.school.api.classbrand_getClassParentMsgList.ApiClassParentMsgService;
+import com.hz.school.api.classbrand_getClassPhotoList.ApiClassPhotoService;
+import com.hz.school.api.classbrand_getClassPhotoList.ApiPhoto;
 import com.hz.school.api.classbrand_getClassStuAttendanceList.ApiStuAttendanceService;
 import com.hz.school.api.classbrand_getClassStuAttendanceList.ApiStudentAttendance;
+import com.hz.school.api.classbrand_getClassStuCardList.ApiClassCardInfo;
+import com.hz.school.api.classbrand_getClassStuCardList.ApiClassStuCardService;
 import com.hz.school.api.classbrand_getClassStuList.ApiGetClassStuService;
 import com.hz.school.api.classbrand_getClassStuList.ApiStudent;
+import com.hz.school.api.classbrand_getClassStuScoreList.ApiClassStuScoreService;
+import com.hz.school.api.classbrand_getClassStuScoreList.ApiClassStudentScore;
 import com.hz.school.api.classbrand_getWeather.ApiWeather;
 import com.hz.school.api.classbrand_getWeather.ApiWeatherService;
 import com.hz.school.model.*;
@@ -246,5 +258,148 @@ public class ApiController {
 		ApiClassAttendance apiData= ApiClassAttendanceService.generateData(classAttendance);
 
 		return ApiResult.single("classbrand_getClassAttendanceInfo",apiData).toSingleJson();
+	}
+	/**
+	 * 生产返回数据为空
+	 * 这个接口太乱了，返回的数据跟需要插入的sz_examInfo表的结构相差很大
+	 *十、 班级考试考场信息数据接口（优先级低，延后）
+	 *  pdf请求参数写的是classid,实际请求参数是classroomid
+	 */
+	@ResponseBody
+	@RequestMapping(value="/classbrand_getClassExamInfoList",method= RequestMethod.POST)
+	public String ClassExamInfoList(HttpServletRequest request) {
+		String apiparams=request.getParameter("apiparams");
+		log.info("apiparams="+apiparams);
+		JSONObject jApiparams= JSONObject.parseObject(apiparams);
+		String params=jApiparams.getString("params");
+		JSONObject jParams=JSONObject.parseObject(params);
+		String accessTlisten=jParams.getString("accessTlisten");
+		String classroomid=jParams.getString("classroomid");
+		log.info("----->>>>>> ClassExamInfoList accessTlisten:"+accessTlisten+",classroomid:"+classroomid);
+		if(StringUtil.isEmpty(classroomid)){
+			return ApiResult.error("classbrand_getClassExamInfoList","400" ,"数据请求错误").toJson();
+		}
+		List<ExamInfo> examInfoList=EbeanUtil.find(ExamInfo.class).where().eq("classid",classroomid).findList();
+		List<ApiExamInfo> apiList= ApiClassExamInfoService.generateList(examInfoList);
+		return ApiResult.list("classbrand_getClassExamInfoList",apiList).toJson();
+	}
+	/**
+	 * 通过
+	 *十一、 班级学生成绩列表数据接口
+	 */
+	@ResponseBody
+	@RequestMapping(value="/classbrand_getClassStuScoreList",method= RequestMethod.POST)
+	public String ClassStuScoreList(HttpServletRequest request) {
+		String apiparams=request.getParameter("apiparams");
+		log.info("apiparams="+apiparams);
+		JSONObject jApiparams= JSONObject.parseObject(apiparams);
+		String params=jApiparams.getString("params");
+		JSONObject jParams=JSONObject.parseObject(params);
+		String accessTlisten=jParams.getString("accessTlisten");
+		String classId=jParams.getString("classid");
+		String stuid=jParams.getString("stuid");
+		log.info("----->>>>>> ClassStuScoreList classId:"+classId+",stuid:"+stuid);
+		if(StringUtil.isEmpty(classId)){
+			return ApiResult.error("classbrand_getClassStuScoreList","400" ,"数据请求错误").toJson();
+		}
+		List<ClassStudentScore> examStudentInfoList=EbeanUtil.find(ClassStudentScore.class).where()
+				.eq("classRoom.classid",classId).eq("student.stuid",stuid).findList();
+		List<ApiClassStudentScore> apiList= ApiClassStuScoreService.generateList(examStudentInfoList);
+		return ApiResult.list("classbrand_getClassStuScoreList",apiList).toJson();
+	}
+	/**
+	 * 通过
+	 *十二、 班级学校园一卡通列表信息
+	 */
+	@ResponseBody
+	@RequestMapping(value="/classbrand_getClassStuCardList",method= RequestMethod.POST)
+	public String ClassStuCardList(HttpServletRequest request) {
+		String apiparams=request.getParameter("apiparams");
+		log.info("apiparams="+apiparams);
+		JSONObject jApiparams= JSONObject.parseObject(apiparams);
+		String params=jApiparams.getString("params");
+		JSONObject jParams=JSONObject.parseObject(params);
+		String accessTlisten=jParams.getString("accessTlisten");
+		String classId=jParams.getString("classid");
+		log.info("----->>>>>> ClassStuCardList accessTlisten:"+accessTlisten+",classid:"+classId);
+
+		if(StringUtil.isEmpty(classId)){
+			return ApiResult.error("classbrand_getClassStuCardList","400" ,"数据请求错误").toSingleJson();
+		}
+		ClassRoom aClass=EbeanUtil.find(ClassRoom.class).where().eq("classid",classId).setMaxRows(1).findUnique();
+		ApiClassCardInfo api= ApiClassStuCardService.generateData(aClass);
+		return ApiResult.single("classbrand_getClassStuCardList",api).toSingleJson();
+	}
+	/**
+	 * 能够插入数据
+	 *十三、 获取班级班级圈列表数据接口
+	 */
+	@ResponseBody
+	@RequestMapping(value="/classbrand_getClassPhotoList",method= RequestMethod.POST)
+	public String ClassPhotoList(HttpServletRequest request) {
+		String apiparams=request.getParameter("apiparams");
+		log.info("apiparams="+apiparams);
+		JSONObject jApiparams= JSONObject.parseObject(apiparams);
+		String params=jApiparams.getString("params");
+		JSONObject jParams=JSONObject.parseObject(params);
+		String accessTlisten=jParams.getString("accessTlisten");
+		String classId=jParams.getString("classid");
+		String ymonth=jParams.getString("ymonth");
+		log.info("----->>>>>> ClassPhotoList accessTlisten:"+accessTlisten+",classid:"+classId+",ymonth:"+ymonth);
+
+		if(StringUtil.isEmpty(classId)){
+			return ApiResult.error("classbrand_getClassPhotoList","400" ,"数据请求错误").toJson();
+		}
+		List<Photo> photoList=EbeanUtil.find(Photo.class).where().eq("classRoom.classid",classId).findList();
+		List<ApiPhoto> apiList= ApiClassPhotoService.generateList(photoList);
+		return ApiResult.list("classbrand_getClassPhotoList",apiList).toJson();
+	}
+	/**
+	 *十四、 班级班级圈点赞接口
+	 */
+	@ResponseBody
+	@RequestMapping(value="/classbrand_classCircleParise",method= RequestMethod.POST)
+	public String CircleParise(HttpServletRequest request) {
+		String apiparams=request.getParameter("apiparams");
+		log.info("apiparams="+apiparams);
+		JSONObject jApiparams= JSONObject.parseObject(apiparams);
+		String params=jApiparams.getString("params");
+		JSONObject jParams=JSONObject.parseObject(params);
+		String accessTlisten=jParams.getString("accessTlisten");
+		String classId=jParams.getString("classid");
+		String circleid=jParams.getString("circleid");
+		String stuid=jParams.getString("stuid");
+		log.info("----->>>>>>CircleParise accessTlisten:"+accessTlisten+",classId:"+classId+",circleid"+circleid+",stuid"+stuid);
+
+		if(StringUtil.isEmpty(classId)){
+			return ApiResult.error("classbrand_classCircleParise","400" ,"数据请求错误").toJson();
+		}
+		//这里应该涉及到修改数据
+		List<Photo> photoList=EbeanUtil.find(Photo.class).where().eq("classid",classId).findList();
+		List<ApiClassCircleParise> apiList= ApiClassCirclePariseService.generateList(photoList);
+		return ApiResult.list("classbrand_classCircleParise",apiList).toJson();
+	}
+	/**
+	 * 可以插入数据
+	 *十五、 获取班级内家长与学生的通信消息
+	 * 十五和十六的请求url肯定有一个有问题，因为两个一样
+	 */
+	@ResponseBody
+	@RequestMapping(value="/classbrand_getClassParentMsgList",method= RequestMethod.POST)
+	public String ClassParentMsgList(HttpServletRequest request) {
+		String apiparams=request.getParameter("apiparams");
+		log.info("apiparams="+apiparams);
+		JSONObject jApiparams= JSONObject.parseObject(apiparams);
+		String params=jApiparams.getString("params");
+		JSONObject jParams=JSONObject.parseObject(params);
+		String accessTlisten=jParams.getString("accessTlisten");
+		String classId=jParams.getString("classid");
+		log.info("----->>>>>>ClassParentMsgList accessTlisten:"+accessTlisten+",classId:"+classId);
+		if(StringUtil.isEmpty(classId)){
+			return ApiResult.error("classbrand_getClassParentMsgList","400" ,"数据请求错误").toJson();
+		}
+		List<MsgList> msgLists=EbeanUtil.find(MsgList.class).where().eq("classid",classId).findList();
+		List<ApiClassParentMsg> apiList= ApiClassParentMsgService.generateList(msgLists);
+		return ApiResult.list("classbrand_getClassParentMsgList",apiList).toJson();
 	}
 }

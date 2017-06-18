@@ -30,6 +30,7 @@ public class Teacher extends BaseEntity{
     private String card;
     /**
      * 卡内余额
+     * 默认为0.0元
      */
     @Column(scale = 1)
     private BigDecimal balance;

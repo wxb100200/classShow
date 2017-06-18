@@ -21,6 +21,7 @@ public class MsgList extends BaseEntity{
      */
     private Long stuid;
 
+    @ManyToOne
     private Student student;
 
     /**
