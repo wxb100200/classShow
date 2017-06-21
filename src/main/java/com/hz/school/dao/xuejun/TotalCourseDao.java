@@ -3,9 +3,11 @@ package com.hz.school.dao.xuejun;
 import com.avaje.ebean.Ebean;
 import com.hz.school.model.ClassRoom;
 import com.hz.school.model.GoClassCourse;
+import com.hz.school.model.TotalCourse;
 import com.hz.school.util.EbeanUtil;
 import com.hz.school.util.ExcelUtil;
 import com.hz.school.util.Logger;
+import com.hz.school.util.StringUtil;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -16,21 +18,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 学军中学课表dao
+ * Created by Administrator on 2017/6/21.
  */
-public class GoClassCourseDao {
+public class TotalCourseDao {
     private static Logger log=Logger.getLogger(GoClassCourseDao.class);
-    private static Map<String,ClassRoom> classRoomMap= (Map<String,ClassRoom>) EbeanUtil.find(ClassRoom.class).where().setMapKey("classRoomName").findMap();
-    public static void parseSheet(Sheet sheet,int startRow,int startColumn,int endColumn){
-        try{
-            Ebean.beginTransaction();
-            Ebean.createSqlQuery("truncate table sc_go_class_course").findUnique();
-            Ebean.commitTransaction();
-        }catch (Exception e){
-            Ebean.rollbackTransaction();
-        }finally {
-            Ebean.endTransaction();
-        }
+    private static Map<String,ClassRoom> classRoomMap= (Map<String,ClassRoom>)EbeanUtil.find(ClassRoom.class).where().setMapKey("className").findMap();
+    public static void parseSheet(Sheet sheet, String sheetName,int startRow, int startColumn, int endColumn){
         Row row=null;
         Row row2=null;
         Iterator<Row> rows=sheet.rowIterator();
@@ -39,37 +32,37 @@ public class GoClassCourseDao {
             if(row.getRowNum()>=startRow){
                 rows.hasNext();
                 row2=rows.next();
-                parseOneRow(row,row2,startColumn,endColumn);
+                parseOneRow(row,row2,sheetName,startColumn,endColumn);
             }
         }
+
     }
-    private static void parseOneRow(Row row,Row row2,int startColumn,int endColumn){
-        String classNum="";
+    private static void parseOneRow(Row row,Row row2,String sheetName,int startColumn,int endColumn){
+        String className="";
         ClassRoom classRoom=new ClassRoom();
-        List<GoClassCourse> goClassCourseList=new ArrayList<GoClassCourse>();
+        List<TotalCourse> totalCourseList=new ArrayList<TotalCourse>();
         for(int i=startColumn;i<endColumn;i++){
             Cell cell=row.getCell(i);
             Object obj= ExcelUtil.readCellValue(cell);
             Cell cell2=row2.getCell(i);
             Object obj2= ExcelUtil.readCellValue(cell2);
             if(i==startColumn){
-                String str=obj.toString();
-                classNum=str.substring(0,str.indexOf("."));
-                classRoom=classRoomMap.get(classNum);
+                className=obj.toString();
+                classRoom=classRoomMap.get(className);
                 continue;
             }
             if(obj==null){
                 continue;
             }
-            GoClassCourse goClassCourse=generateGoClassCourse(classRoom,obj,obj2,i);
-            if(goClassCourse!=null){
-                goClassCourseList.add(goClassCourse);
+            TotalCourse totalCourse=generateTotalCourse(sheetName,classRoom,obj,obj2,i);
+            if(totalCourse!=null){
+                totalCourseList.add(totalCourse);
             }
         }
         //保存走班课表
         try {
             Ebean.beginTransaction();
-            Ebean.save(goClassCourseList);
+            Ebean.save(totalCourseList);
             Ebean.commitTransaction();
         }catch (Exception e){
             Ebean.rollbackTransaction();
@@ -77,10 +70,11 @@ public class GoClassCourseDao {
             Ebean.endTransaction();
         }
     }
-    private static GoClassCourse generateGoClassCourse(ClassRoom classRoom,Object obj,Object obj2,int i){
-        if(obj==null) return null;
+    private static TotalCourse generateTotalCourse(String sheetName,ClassRoom classRoom,Object obj1,Object obj2,int i){
+        if(obj1==null)return null;
         int classNum=generateClassNum(i);
-        String courseName=obj.toString();
+        String courseName=obj1.toString();
+        if(StringUtil.isEmpty(courseName))return null;
         String teacherName="";
         if(obj2!=null){
             teacherName=obj2.toString();
@@ -88,14 +82,15 @@ public class GoClassCourseDao {
         int timeInterval=generateTimeInterval(i);
         int weekday=generateWeekday(i);
         log.info("---->>>generate data is classNum:"+classNum+",classid:"+classRoom.getClassid()+",courseName:"+courseName+",teacherName:"+teacherName+",timeInterval:"+timeInterval+",weekday:"+weekday);
-        GoClassCourse goClassCourse=new GoClassCourse();
-        goClassCourse.setClassNum(classNum);
-        goClassCourse.setClassRoom(classRoom);
-        goClassCourse.setCourseName(courseName);
-        goClassCourse.setTeacherName(teacherName);
-        goClassCourse.setTimeInterval(timeInterval);
-        goClassCourse.setWeekday(weekday);
-        return goClassCourse;
+        TotalCourse totalCourse=new TotalCourse();
+        totalCourse.setClassNum(classNum);
+        totalCourse.setClassRoom(classRoom);
+        totalCourse.setCourseName(courseName);
+        totalCourse.setTeacherName(teacherName);
+        totalCourse.setTimeInterval(timeInterval);
+        totalCourse.setWeekday(weekday);
+        totalCourse.setWeekInfo(sheetName);
+        return totalCourse;
     }
     private static int generateWeekday(int i){
         if(i>0&&i<=9){
@@ -136,4 +131,5 @@ public class GoClassCourseDao {
             default:return 4;
         }
     }
+
 }

@@ -1,6 +1,7 @@
 package com.hz.school.api.classbrand_getTakeClassStuList;
 
 
+import com.hz.school.model.ClassRoom;
 import com.hz.school.model.GoClassCourse;
 import com.hz.school.model.GoClassStudent;
 import com.hz.school.model.Student;
@@ -16,7 +17,8 @@ public class ApiTakeClassStuService {
         List<ApiTakeClass> apiTakeClassList =new ArrayList<ApiTakeClass>();
         for(GoClassCourse goClassCourse:goClassCourseList){
             ApiTakeClass apiTakeClass =new ApiTakeClass();
-            apiTakeClass.setClassid(Integer.parseInt(goClassCourse.getClassid()));
+            ClassRoom classRoom=goClassCourse.getClassRoom();
+            apiTakeClass.setClassid(Integer.parseInt(classRoom.getClassid()));
             apiTakeClass.setPicpath("");
             apiTakeClass.setClassNum(goClassCourse.getClassNum());
             apiTakeClass.setWeekday(goClassCourse.getWeekday());

@@ -158,12 +158,35 @@
             <version>3.11-beta2</version>
         </dependency>
     </dependencies>
-    <!--<build>
-        <finalName>study</finalName>
-    </build>-->
     <build>
         <finalName>classShow</finalName>
+
         <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.hz.school.MainCourse</mainClass>
+                        </manifest>
+                    </archive>
+                    <finalName>classShow</finalName>
+                    <appendAssemblyId>false</appendAssemblyId>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-my-jar-with-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>

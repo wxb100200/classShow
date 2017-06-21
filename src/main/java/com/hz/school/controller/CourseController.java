@@ -1,8 +1,11 @@
 package com.hz.school.controller;
 
+import com.avaje.ebean.Ebean;
 import com.hz.school.dao.GSCourseDao;
 import com.hz.school.dao.xuejun.GoClassCourseDao;
 import com.hz.school.dao.xuejun.StudentCourseDao;
+import com.hz.school.dao.xuejun.TotalCourseDao;
+import com.hz.school.model.TotalCourse;
 import com.hz.school.util.ExcelUtil;
 import com.hz.school.util.FileUtil;
 import com.hz.school.util.Logger;
@@ -51,6 +54,40 @@ public class CourseController {
         }
     }
     /**
+     * 学军中学上传总行政课表
+     */
+    @RequestMapping(value = "/uploadTotalCourseExcel")
+    public String uploadTotalCourseExcel(HttpServletRequest request,String username,ModelMap model){
+        try{
+            Ebean.beginTransaction();
+            Ebean.createSqlQuery("truncate table sc_total_course").findUnique();
+            Ebean.commitTransaction();
+        }catch (Exception e){
+            Ebean.rollbackTransaction();
+        }finally {
+            Ebean.endTransaction();
+        }
+        try{
+            log.info("----->>>>>>>>start import excel data<<<<<<<<<<-----------------");
+            FileItem fileItem=parseFormFileItem(request).get(0);
+            Workbook workbook= ExcelUtil.generateWorkbook(fileItem);
+            int num=workbook.getNumberOfSheets();
+            for(int i=0;i<num;i++){
+                Sheet sheet=workbook.getSheetAt(i);
+                String sheetName=sheet.getSheetName();
+                log.info("----------->>>>i:"+i+",sheetName:"+sheetName);
+                TotalCourseDao.parseSheet(sheet,sheetName,3,0,46);
+            }
+            System.out.println("end import excel data");
+            model.addAttribute("message","import excel data success");
+            log.info("----->>>>>>>>close import excel data<<<<<<<<<<-----------------");
+            return "hello";
+        }catch (Exception e){
+            log.error("-------->>>>>>>>CourseController uploadTotalCourseExcel error ",e);
+            return null;
+        }
+    }
+    /**
      * 学军中学上传走班课表
      */
     @RequestMapping(value = "/uploadGoClassExcel")
@@ -78,7 +115,7 @@ public class CourseController {
         try{
             log.info("----->>>>>>>>uploadStudentCourseExcel method start import excel data<<<<<<<<<<-----------------");
             FileItem fileItem=parseFormFileItem(request).get(0);
-            Workbook workbook= ExcelUtil.openExcel(fileItem.getInputStream(),true);
+            Workbook workbook= ExcelUtil.generateWorkbook(fileItem);
             Sheet sheet=workbook.getSheetAt(0);
             StudentCourseDao.parseSheet(sheet,0,0,5);
             System.out.println("end import excel data");

@@ -2,6 +2,7 @@ package com.hz.school.controller;
 
 import com.avaje.ebean.Ebean;
 import com.hz.school.model.Student;
+import com.hz.school.util.EbeanUtil;
 import com.hz.school.util.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -14,6 +15,7 @@ public class HelloController {
     private static Logger log=Logger.getLogger(HelloController.class);
     @RequestMapping(value="/",method=RequestMethod.GET)
     public String index(ModelMap model){
+        EbeanUtil.find(Student.class).findRowCount();
         log.info("----》》》。日志输出");
         model.addAttribute("message","Hello Spring mvc Framework");
         return "index";

@@ -1,19 +1,20 @@
 package com.hz.school.model;
 
-import javax.persistence.*;
-import java.util.List;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 
 /**
- * 走班课表
+ * 总行政班课程表
  */
 @Entity
-@Table(name = Constant.DB_PREFIX+"go_class_course")
-public class GoClassCourse  extends BaseEntity{
+@Table(name = Constant.DB_PREFIX+"total_course")
+public class TotalCourse extends BaseEntity{
     /**
      * 第几节课
      */
     private Integer classNum;
-
     /**
      * 课程名称
      */
@@ -41,14 +42,14 @@ public class GoClassCourse  extends BaseEntity{
      */
     private Integer weekday;
 
+    /**
+     * 周信息
+     * 可以判断是第几周
+     */
+    private String weekInfo;
+
     @ManyToOne
     private ClassRoom classRoom;
-
-    /**
-     * 关联的学生
-     */
-    @OneToMany(mappedBy = "goClassCourse")
-    private List<GoClassStudent> goClassStudents;
 
     public Integer getClassNum() {
         return classNum;
@@ -98,6 +99,7 @@ public class GoClassCourse  extends BaseEntity{
         this.timeInterval = timeInterval;
     }
 
+
     public Integer getWeekday() {
         return weekday;
     }
@@ -114,11 +116,11 @@ public class GoClassCourse  extends BaseEntity{
         this.classRoom = classRoom;
     }
 
-    public List<GoClassStudent> getGoClassStudents() {
-        return goClassStudents;
+    public String getWeekInfo() {
+        return weekInfo;
     }
 
-    public void setGoClassStudents(List<GoClassStudent> goClassStudents) {
-        this.goClassStudents = goClassStudents;
+    public void setWeekInfo(String weekInfo) {
+        this.weekInfo = weekInfo;
     }
 }

@@ -509,12 +509,14 @@ public class ApiResource {
         JSONObject jApiparams= JSONObject.parseObject(apiparams);
         String params=jApiparams.getString("params");
         JSONObject jParams=JSONObject.parseObject(params);
-        String classid=jParams.getString("classid");
-        String accessToken=jParams.getString("accessToken");
-        log.info("----->>>>>>getClassCourseList classid:"+classid+",accessToken:"+accessToken);
-        List<GoClassCourse> goClassCourseList=EbeanUtil.find(GoClassCourse.class).where().eq("classid",classid)
-                .findList();
-        List<ApiClassCourse> apiClassCourseList = ApiClassCourseService.generateList(goClassCourseList);
+        String classroomid=jParams.getString("classroomid");
+        String term=jParams.getString("term");
+        log.info("----->>>>>>getClassCourseList classroomid:"+classroomid+",term:"+term);
+        List<TotalCourse> totalCourseList=EbeanUtil.find(TotalCourse.class).where().
+                eq("classRoom.classRoomid",classroomid).eq("weekInfo","5.2——5.6第十二周").findList();//根据当前时间获取第几周的课表
+        List<GoClassCourse> goClassCourseList=EbeanUtil.find(GoClassCourse.class).where().eq("classRoom.classRoomid",classroomid).findList();
+
+        List<ApiClassCourse> apiClassCourseList = ApiClassCourseService.generateList(totalCourseList,goClassCourseList);
         return ApiResult.list("classbrand_getClassCourseList", apiClassCourseList).toJson();
     }
 
@@ -535,7 +537,7 @@ public class ApiResource {
         String classid=jParams.getString("classid");
         String accessToken=jParams.getString("accessToken");
         log.info("----->>>>>>getClassCourseList classid:"+classid+",accessToken:"+accessToken);
-        List<GoClassCourse> goClassCourseList=EbeanUtil.find(GoClassCourse.class).where().eq("classid",classid)
+        List<GoClassCourse> goClassCourseList=EbeanUtil.find(GoClassCourse.class).where().eq("classRoom.classid",classid)
                 .findList();
         List<ApiTakeClass> apiTakeClassList = ApiTakeClassStuService.generateList(goClassCourseList);
         return ApiResult.list("classbrand_getClassCourseList", apiTakeClassList).toJson();

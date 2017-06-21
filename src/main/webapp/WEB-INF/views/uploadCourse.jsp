@@ -20,6 +20,11 @@
       上传文件：<input type="file" name="file"><br/>
       <input type="submit" value="提交">
      </form>
+    <h2>学军中学总行政课表</h2>
+    <form action="../course/uploadTotalCourseExcel" enctype="multipart/form-data" method="post">
+      上传文件：<input type="file" name="file"><br/>
+      <input type="submit" value="提交">
+     </form>
     <h2>学军中学上传走班课表</h2>
     <form action="../course/uploadGoClassExcel" enctype="multipart/form-data" method="post">
       上传文件：<input type="file" name="file"><br/>

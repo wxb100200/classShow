@@ -110,12 +110,13 @@ public class StudentCourseDao {
     }
     private static GoClassCourse generateGoClassCourse(Object obj,int num,int week){
         String str=obj.toString().replaceAll("\\s*","");
-        String classid=str.replaceAll(".*[^\\d](?=(\\d+))","");
+        String classRoomName=str.replaceAll(".*[^\\d](?=(\\d+))","");
         Integer classNum=generateClassNum(num);
         Integer timeInterval=generateTimeInterval(num);
-        return EbeanUtil.find(GoClassCourse.class).where()
-                .eq("classid",classid).eq("weekday",week).eq("classNum",classNum).eq("timeInterval",timeInterval)
+        GoClassCourse goClassCourse=EbeanUtil.find(GoClassCourse.class).where()
+                .eq("classRoom.classRoomName",classRoomName).eq("weekday",week).eq("classNum",classNum).eq("timeInterval",timeInterval)
                 .setMaxRows(1).findUnique();
+        return goClassCourse;
     }
     private static int generateTimeInterval(int num){
         if(num>0 && num<6){
