@@ -1,7 +1,9 @@
 package com.hz.school.api.classbrand_getClassCoursLeist;
 
 
+import com.hz.school.model.CourseInfo;
 import com.hz.school.model.GoClassCourse;
+import com.hz.school.model.Teacher;
 import com.hz.school.model.TotalCourse;
 
 import java.util.ArrayList;
@@ -19,9 +21,15 @@ public class ApiClassCourseService {
             api.setClassNum(totalCourse.getClassNum());
             api.setClassid(totalCourse.getClassRoom().getClassid());
             api.setCourseName(totalCourse.getCourseName());
-            api.setCourseid(totalCourse.getCourseid());
+            CourseInfo courseInfo=totalCourse.getCourse();
+            if(courseInfo!=null){
+                api.setCourseid(courseInfo.getId());
+            }
             api.setTeacherName(totalCourse.getTeacherName());
-            api.setTeacherid(totalCourse.getTeacherid());
+            Teacher teacher=totalCourse.getTeacher();
+            if(teacher!=null){
+                api.setTeacherid(teacher.getId());
+            }
             api.setTimeInterval(totalCourse.getTimeInterval());
             api.setType(1);
             api.setWeekday(totalCourse.getWeekday());

@@ -28,7 +28,7 @@ import java.util.List;
  * api统一进入接口
  */
 @Controller
-@RequestMapping(value="/api",produces="text/html;charset=UTF-8")
+@RequestMapping(value="/api2",produces="text/html;charset=UTF-8")
 public class ApiResource {
     private static Logger log=Logger.getLogger(ApiResource.class);
 

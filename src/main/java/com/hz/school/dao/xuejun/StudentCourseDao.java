@@ -111,7 +111,7 @@ public class StudentCourseDao {
     private static GoClassCourse generateGoClassCourse(Object obj,int num,int week){
         String str=obj.toString().replaceAll("\\s*","");
         String classRoomName=str.replaceAll(".*[^\\d](?=(\\d+))","");
-        Integer classNum=generateClassNum(num);
+        Integer classNum=num;
         Integer timeInterval=generateTimeInterval(num);
         GoClassCourse goClassCourse=EbeanUtil.find(GoClassCourse.class).where()
                 .eq("classRoom.classRoomName",classRoomName).eq("weekday",week).eq("classNum",classNum).eq("timeInterval",timeInterval)
@@ -125,7 +125,7 @@ public class StudentCourseDao {
             return 2;
         }
     }
-    private static Integer generateClassNum(int num){
+    /*private static Integer generateClassNum(int num){
         switch (num){
             case 1:return 1;
             case 2:return 2;
@@ -140,7 +140,7 @@ public class StudentCourseDao {
             case 11:return 6;
             default:return 7;
         }
-    }
+    }*/
 
     private static String generateStudentPoNumber(Cell cell){
         String str= cell.toString();

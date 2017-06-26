@@ -11,6 +11,8 @@ import com.hz.school.api.classbrand_getBzrClassid.ApiClassRoom;
 import com.hz.school.api.classbrand_getBzrClassid.ApiGetBzrClassService;
 import com.hz.school.api.classbrand_getClassAttendanceInfo.ApiClassAttendance;
 import com.hz.school.api.classbrand_getClassAttendanceInfo.ApiClassAttendanceService;
+import com.hz.school.api.classbrand_getClassCoursLeist.ApiClassCourse;
+import com.hz.school.api.classbrand_getClassCoursLeist.ApiClassCourseService;
 import com.hz.school.api.classbrand_getClassExamInfoList.ApiClassExamInfoService;
 import com.hz.school.api.classbrand_getClassExamInfoList.ApiExamInfo;
 import com.hz.school.api.classbrand_getClassParentMsgList.ApiClassParentMsg;
@@ -27,6 +29,8 @@ import com.hz.school.api.classbrand_getClassStuList.ApiGetClassStuService;
 import com.hz.school.api.classbrand_getClassStuList.ApiStudent;
 import com.hz.school.api.classbrand_getClassStuScoreList.ApiClassStuScoreService;
 import com.hz.school.api.classbrand_getClassStuScoreList.ApiClassStudentScore;
+import com.hz.school.api.classbrand_getTakeClassStuList.ApiTakeClass;
+import com.hz.school.api.classbrand_getTakeClassStuList.ApiTakeClassStuService;
 import com.hz.school.api.classbrand_getWeather.ApiWeather;
 import com.hz.school.api.classbrand_getWeather.ApiWeatherService;
 import com.hz.school.model.*;
@@ -38,13 +42,15 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 
 @Controller
-@RequestMapping(value="/api2",produces="text/html;charset=UTF-8")
+@RequestMapping(value="/api",produces="text/html;charset=UTF-8")
 public class ApiController {
 	private static Logger log=Logger.getLogger(ApiResource.class);
 	/*@ResponseBody
@@ -470,5 +476,70 @@ public class ApiController {
 
 		return null;
 	}
+	/**
+	 *十九、班级课表接口：classbrand_getClassCourseList（班级课程表信息）
+	 * 入参：
+	 * 教室ID（classroomid）、学期（term）
+	 */
+	@ResponseBody
+	@RequestMapping(value="/classbrand_getClassCourseList",method= RequestMethod.POST)
+	public String getClassCourseList(HttpServletRequest request) {
+		String apiparams=request.getParameter("apiparams");
+		log.info("apiparams="+apiparams);
+		JSONObject jApiparams= JSONObject.parseObject(apiparams);
+		String params=jApiparams.getString("params");
+		JSONObject jParams=JSONObject.parseObject(params);
+		String classroomid=jParams.getString("classroomid");
+		String term=jParams.getString("term");
+		log.info("----->>>>>>getClassCourseList classroomid:"+classroomid+",term:"+term);
+		int currentWeek=0;
+		try {
+			currentWeek=judgeWeek();
+		} catch (ParseException e) {
+			e.printStackTrace();
+			log.error("--->>>>获取当前第几周失败。。。",e);
+		}
+		List<TotalCourse> totalCourseList=EbeanUtil.find(TotalCourse.class).where().
+				eq("classRoom.classRoomid",classroomid).eq("numWeek",currentWeek).findList();//根据当前时间获取第几周的课表
+		List<GoClassCourse> goClassCourseList=EbeanUtil.find(GoClassCourse.class).where().eq("classRoom.classRoomid",classroomid).findList();
 
+		List<ApiClassCourse> apiClassCourseList = ApiClassCourseService.generateList(totalCourseList,goClassCourseList);
+		return ApiResult.list("classbrand_getClassCourseList", apiClassCourseList).toJson();
+	}
+
+	/**
+	 *获取走班课程
+	 *接口：classbrand_getTakeClassStuList（班级课程走班课表信息）
+	 *入参：
+	 *accessToken（保留）、教室ID（classid）
+	 */
+	@ResponseBody
+	@RequestMapping(value="/classbrand_getTakeClassStuList",method= RequestMethod.POST)
+	public String getTakeClassStuList(HttpServletRequest request) {
+		String apiparams=request.getParameter("apiparams");
+		log.info("apiparams="+apiparams);
+		JSONObject jApiparams= JSONObject.parseObject(apiparams);
+		String params=jApiparams.getString("params");
+		JSONObject jParams=JSONObject.parseObject(params);
+		String classid=jParams.getString("classid");
+		String accessToken=jParams.getString("accessToken");
+		log.info("----->>>>>>getClassCourseList classid:"+classid+",accessToken:"+accessToken);
+		List<GoClassCourse> goClassCourseList=EbeanUtil.find(GoClassCourse.class).where().eq("classRoom.classid",classid)
+				.findList();
+		List<ApiTakeClass> apiTakeClassList = ApiTakeClassStuService.generateList(goClassCourseList);
+		return ApiResult.list("classbrand_getClassCourseList", apiTakeClassList).toJson();
+	}
+	/**
+	 * 根据系统当前时间判断第几周
+	 */
+	private static int judgeWeek() throws ParseException {
+		Date date=DateUtil.getCurrent();
+		int yearWeek=DateUtil.weekOfYear(date);
+
+		String startDate="2017-02-27";
+		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+		Date date2 = format.parse(startDate);
+		int yearWeek2=DateUtil.weekOfYear(date2);
+		return yearWeek-yearWeek2;
+	}
 }

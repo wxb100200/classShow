@@ -601,6 +601,17 @@ public class DateUtil {
         return getMonthLastDate(currentYear, month);
     }
 
+    /**
+     * 获取日期属于当年第几周
+     * 星期一属于一周的第一天
+     */
+    public static int weekOfYear(Date date){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setFirstDayOfWeek(Calendar.MONDAY);
+        calendar.setTime(date);
+        return calendar.get(Calendar.WEEK_OF_YEAR);
+    }
+
     public static void main(String[] args) {
         System.out.println(betweenOfDay(System.currentTimeMillis(), 1414054578859L));
     }

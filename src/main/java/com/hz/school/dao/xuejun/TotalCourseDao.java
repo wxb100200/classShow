@@ -1,9 +1,7 @@
 package com.hz.school.dao.xuejun;
 
 import com.avaje.ebean.Ebean;
-import com.hz.school.model.ClassRoom;
-import com.hz.school.model.GoClassCourse;
-import com.hz.school.model.TotalCourse;
+import com.hz.school.model.*;
 import com.hz.school.util.EbeanUtil;
 import com.hz.school.util.ExcelUtil;
 import com.hz.school.util.Logger;
@@ -23,6 +21,8 @@ import java.util.Map;
 public class TotalCourseDao {
     private static Logger log=Logger.getLogger(GoClassCourseDao.class);
     private static Map<String,ClassRoom> classRoomMap= (Map<String,ClassRoom>)EbeanUtil.find(ClassRoom.class).where().setMapKey("className").findMap();
+    private static Map<String,CourseInfo> courseInfoMap=(Map<String,CourseInfo>)EbeanUtil.find(CourseInfo.class).where().setMapKey("courseName").findMap();
+    private static Map<String,Teacher> teacherMap=(Map<String,Teacher>)EbeanUtil.find(Teacher.class).where().setMapKey("teacherName").findMap();
     public static void parseSheet(Sheet sheet, String sheetName,int startRow, int startColumn, int endColumn){
         Row row=null;
         Row row2=null;
@@ -86,12 +86,16 @@ public class TotalCourseDao {
         totalCourse.setClassNum(classNum);
         totalCourse.setClassRoom(classRoom);
         totalCourse.setCourseName(courseName);
+        totalCourse.setCourse(courseInfoMap.get(courseName));
         totalCourse.setTeacherName(teacherName);
+        totalCourse.setTeacher(teacherMap.get(teacherName));
         totalCourse.setTimeInterval(timeInterval);
         totalCourse.setWeekday(weekday);
+        totalCourse.setNumWeek(generateNumWeek(sheetName));
         totalCourse.setWeekInfo(sheetName);
         return totalCourse;
     }
+
     private static int generateWeekday(int i){
         if(i>0&&i<=9){
             return 1;
@@ -125,11 +129,68 @@ public class TotalCourseDao {
             case 3:return 3;
             case 4:return 4;
             case 5:return 5;
-            case 6:return 1;
-            case 7:return 2;
-            case 8:return 3;
-            default:return 4;
+            case 6:return 6;
+            case 7:return 7;
+            case 8:return 8;
+            default:return 9;
         }
     }
-
+    private static int generateNumWeek(String sheetName){
+        String num=sheetName.substring(sheetName.indexOf("第")+1,sheetName.indexOf("周"));
+        return chineseNumber2Int(num);
+    }
+    private static int chineseNumber2Int(String chineseNumber){
+        int result = 0;
+        int temp = 1;//存放一个单位的数字如：十万
+        int count = 0;//判断是否有chArr
+        char[] cnArr = new char[]{'一','二','三','四','五','六','七','八','九'};
+        char[] chArr = new char[]{'十','百','千','万','亿'};
+        for (int i = 0; i < chineseNumber.length(); i++) {
+            boolean b = true;//判断是否是chArr
+            char c = chineseNumber.charAt(i);
+            for (int j = 0; j < cnArr.length; j++) {//非单位，即数字
+                if (c == cnArr[j]) {
+                    if(0 != count){//添加下一个单位之前，先把上一个单位值添加到结果中
+                        result += temp;
+                        temp = 1;
+                        count = 0;
+                    }
+                    // 下标+1，就是对应的值
+                    temp = j + 1;
+                    b = false;
+                    break;
+                }
+            }
+            if(b){//单位{'十','百','千','万','亿'}
+                for (int j = 0; j < chArr.length; j++) {
+                    if (c == chArr[j]) {
+                        switch (j) {
+                            case 0:
+                                temp *= 10;
+                                break;
+                            case 1:
+                                temp *= 100;
+                                break;
+                            case 2:
+                                temp *= 1000;
+                                break;
+                            case 3:
+                                temp *= 10000;
+                                break;
+                            case 4:
+                                temp *= 100000000;
+                                break;
+                            default:
+                                break;
+                        }
+                        count++;
+                    }
+                }
+            }
+            if (i == chineseNumber.length() - 1) {//遍历到最后一个字符
+                result += temp;
+            }
+        }
+        return result;
+    }
 }

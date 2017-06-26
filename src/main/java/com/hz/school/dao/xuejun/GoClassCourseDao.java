@@ -1,8 +1,7 @@
 package com.hz.school.dao.xuejun;
 
 import com.avaje.ebean.Ebean;
-import com.hz.school.model.ClassRoom;
-import com.hz.school.model.GoClassCourse;
+import com.hz.school.model.*;
 import com.hz.school.util.EbeanUtil;
 import com.hz.school.util.ExcelUtil;
 import com.hz.school.util.Logger;
@@ -130,10 +129,10 @@ public class GoClassCourseDao {
             case 3:return 3;
             case 4:return 4;
             case 5:return 5;
-            case 6:return 1;
-            case 7:return 2;
-            case 8:return 3;
-            default:return 4;
+            case 6:return 6;
+            case 7:return 7;
+            case 8:return 8;
+            default:return 9;
         }
     }
 }

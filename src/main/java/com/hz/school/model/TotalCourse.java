@@ -20,17 +20,19 @@ public class TotalCourse extends BaseEntity{
      */
     private String courseName;
     /**
-     * 课程id
+     * 课程表
      */
-    private Long courseid;
+    @ManyToOne
+    private CourseInfo course;
     /**
      * 教师姓名
      */
     private String teacherName;
     /**
-     * 教师id
+     * 教师表
      */
-    private Long teacherid;
+    @ManyToOne
+    private Teacher teacher;
     /**
      * 时段
      * 1：上午；2：下午
@@ -42,6 +44,10 @@ public class TotalCourse extends BaseEntity{
      */
     private Integer weekday;
 
+    /**
+     * 第几周
+     */
+    private Integer numWeek;
     /**
      * 周信息
      * 可以判断是第几周
@@ -67,12 +73,12 @@ public class TotalCourse extends BaseEntity{
         this.courseName = courseName;
     }
 
-    public Long getCourseid() {
-        return courseid;
+    public CourseInfo getCourse() {
+        return course;
     }
 
-    public void setCourseid(Long courseid) {
-        this.courseid = courseid;
+    public void setCourse(CourseInfo course) {
+        this.course = course;
     }
 
     public String getTeacherName() {
@@ -83,12 +89,12 @@ public class TotalCourse extends BaseEntity{
         this.teacherName = teacherName;
     }
 
-    public Long getTeacherid() {
-        return teacherid;
+    public Teacher getTeacher() {
+        return teacher;
     }
 
-    public void setTeacherid(Long teacherid) {
-        this.teacherid = teacherid;
+    public void setTeacher(Teacher teacher) {
+        this.teacher = teacher;
     }
 
     public Integer getTimeInterval() {
@@ -99,13 +105,20 @@ public class TotalCourse extends BaseEntity{
         this.timeInterval = timeInterval;
     }
 
-
     public Integer getWeekday() {
         return weekday;
     }
 
     public void setWeekday(Integer weekday) {
         this.weekday = weekday;
+    }
+
+    public String getWeekInfo() {
+        return weekInfo;
+    }
+
+    public void setWeekInfo(String weekInfo) {
+        this.weekInfo = weekInfo;
     }
 
     public ClassRoom getClassRoom() {
@@ -116,11 +129,11 @@ public class TotalCourse extends BaseEntity{
         this.classRoom = classRoom;
     }
 
-    public String getWeekInfo() {
-        return weekInfo;
+    public Integer getNumWeek() {
+        return numWeek;
     }
 
-    public void setWeekInfo(String weekInfo) {
-        this.weekInfo = weekInfo;
+    public void setNumWeek(Integer numWeek) {
+        this.numWeek = numWeek;
     }
 }
